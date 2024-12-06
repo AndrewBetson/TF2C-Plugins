@@ -14,6 +14,8 @@ ConVar g_cvarArenaMaxStreak;
 ConVar g_cvarCvar;
 ConVar g_cvarAllText;
 
+ConVar g_cvarActivateMsg;
+
 #define PLUGIN_VERSION "0.6-AndrewB"
 public Plugin myinfo = 
 {
@@ -38,7 +40,9 @@ public void OnPluginStart()
 	g_cvarArenaMaxStreak = CreateConVar("sm_tidychat_arena_maxstreak", "1", "0/1 Tidy (arena) team scramble messages");
 	g_cvarCvar = CreateConVar("sm_tidychat_cvar", "1", "0/1 Tidy cvar messages");
 	g_cvarAllText = CreateConVar("sm_tidychat_alltext", "0", "0/1 Tidy all chat messages from plugins");
-	
+
+	g_cvarActivateMsg = CreateConVar("sm_tidychat_activatemsg", "1", "0/1 Print custom join message when players fully connect");
+
 	// Mod independant hooks
 	HookEvent("player_connect_client", Event_PlayerConnect, EventHookMode_Pre);
 	HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);
@@ -75,10 +79,13 @@ public Action Event_PlayerDisconnect(Event event, const char[] name, bool dontBr
 
 public Action Event_PlayerActivate( Event Evt, const char[] Name, bool bDontBroadcast )
 {
-	int Client = GetClientOfUserId( Evt.GetInt( "userid" ) );
+	if ( g_cvarEnabled.BoolValue && ( g_cvarConnect.BoolValue && g_cvarActivateMsg.BoolValue ) )
+	{
+		int Client = GetClientOfUserId( Evt.GetInt( "userid" ) );
 
-	// Icky, no-good hack!
-	RequestFrame( Frame_PrintActivatedPlayerName, Client );
+		// Icky, no-good hack!
+		RequestFrame( Frame_PrintActivatedPlayerName, Client );
+	}
 
 	return Plugin_Continue;
 }
